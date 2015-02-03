@@ -1,0 +1,27 @@
+#!/bin/sh
+
+URL='https://api.github.com/repos/github/gitignore/contents'
+
+if [ $# == 1 ]; then
+    FILE=$(
+        curl "$URL" | # Download the listing
+            grep '"name"' | # Search for name lines
+            cut -f4 -d'"' | # Get the name field (hacky!)
+            grep -i "$1" | # Search for the name typed in
+            head -n1) # Get the first one
+
+    if [ "$FILE" != "" ]; then
+	read -p "Download $FILE? (y/n) " -r
+	echo
+	if [[ $REPLY =~ ^[Yy]$ ]]; then
+            # Download the file
+            curl "https://raw.githubusercontent.com/github/gitignore/master/$FILE" >> .gitignore
+	fi
+    else
+        echo "No match found" >&2
+    fi
+else
+    curl "$URL" |
+        grep '"name"' |
+        cut -f4 -d'"'
+fi
